@@ -16,14 +16,19 @@
   const incoming=decodeIncoming();
 
   function getText(){try{
+    // On touch/mobile ABC Tools edits the real textarea. Its own helper can
+    // still point at the previous tune, so the visible textarea is authoritative.
+    const ta=document.getElementById('abc');
+    if(ta&&typeof ta.value==='string')return ta.value;
     if(window.gTheCM&&typeof window.gTheCM.getValue==='function')return window.gTheCM.getValue();
     if(typeof getABCEditorText==='function')return getABCEditorText();
-    return document.getElementById('abc')?.value||'';
+    return '';
   }catch(e){return'';}}
   function setText(v){
+    const ta=document.getElementById('abc');
+    if(ta)ta.value=v;
     if(window.gTheCM&&typeof window.gTheCM.setValue==='function')window.gTheCM.setValue(v);
     else if(typeof setABCEditorText==='function')setABCEditorText(v);
-    else{const ta=document.getElementById('abc');if(ta)ta.value=v;}
   }
   function save(){try{const abc=getText();if(!abc.trim()||abc===lastSavedText)return;localStorage.setItem(KEY,JSON.stringify({abc,savedAt:new Date().toISOString()}));lastSavedText=abc;}catch(e){}}
 
