@@ -26,7 +26,7 @@
 //
 //
 
-const cacheName = 'abctoolscache-wibem1-2';
+const cacheName = 'abctoolscache-wibem1-3';
 
 const contentToCache = [
     'abctools.html',
@@ -43,6 +43,7 @@ const contentToCache = [
     'codemirror-min.css',
     'app-min.js',
     'session-persistence.js',
+    'minimal-composer-handoff.js',
     'jquery-1.11.1.min.js',
 	'jszip.min.js',
 	'xml2abc-min.js',
