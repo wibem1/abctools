@@ -284,42 +284,7 @@
 	<script type="text/javascript" src="baritone-ukulele-chords.js"></script><!-- baritone ukulele chord grid definitions -->
 	<script type="text/javascript" src="api-keys.js"></script><!-- API keys used by the tool -->
 	<script type="text/javascript" src="app-min.js"></script><!-- main application business logic -->
-	<script>
-(function(){
-  // This fork no longer uses a service worker. Remove legacy registrations/caches
-  // left by older installed/browser versions, then reload once so the page is
-  // fetched without an obsolete controller.
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', async function () {
-      try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        const controlled = !!navigator.serviceWorker.controller;
-        let removed = false;
-        for (const reg of regs) {
-          if (reg.scope && reg.scope.indexOf('/abctools/') !== -1) {
-            removed = (await reg.unregister()) || removed;
-          }
-        }
-        if ('caches' in window) {
-          const keys = await caches.keys();
-          for (const key of keys) {
-            if (/abctools/i.test(key)) {
-              await caches.delete(key);
-              removed = true;
-            }
-          }
-        }
-        const flag = 'wibem1_abctools_legacy_sw_cleanup_v1';
-        if ((controlled || removed) && !sessionStorage.getItem(flag)) {
-          sessionStorage.setItem(flag, '1');
-          location.reload();
-        }
-      } catch (e) {}
-    });
-  }
-})();
-</script>
-<script type="text/javascript" src="session-persistence.js?v=20260922-2129"></script><!-- local automatic session restore for this fork -->
+	<script type="text/javascript" src="session-persistence.js?v=20260922-2140"></script><!-- local automatic session restore for this fork -->
 	<script type="text/javascript" src="minimal-composer-handoff.js"></script><!-- send current ABC back to Minimal Composer -->
 
 </html>
