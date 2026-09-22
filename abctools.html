@@ -75,6 +75,33 @@
 		<link href="app-min.css" media="all" rel="stylesheet" type="text/css">
 		<link href="codemirror-min.css" media="all" rel="stylesheet" type="text/css">
 		
+	
+		<style id="wibem1-slim-ui">
+			/* Slim UI: visual-only. Keep DOM nodes intact because app-min.js depends on them. */
+			#tunetrainerbutton,
+			#saveaswebsite,
+			#togglesharecontrols,
+			#guidedtourbutton,
+			#notation-placeholder input[value="Show Introduction"],
+			#notation-placeholder input[value="What's New"],
+			#tabs-selection input:not(#b1),
+			#tabs-selection label:not([for="b1"]) { display:none !important; }
+
+			/* Keep only Tune Search visible in the legacy link row. */
+			#wibem1-legacy-links { display:none !important; }
+		</style>
+
+	
+		<style id="wibem1-slim-links">
+			#topbar a[href="userguide.html"],
+			#topbar a[href="abc_standard_v2.1.pdf"],
+			#topbar a[href="general_midi_extended_v10.pdf"],
+			#topbar a[href="https://michaeleskin.com/tunebooks.html"],
+			#topbar a[href="credits.html"],
+			#topbar a[href="https://www.facebook.com/groups/223783166918600"],
+			#topbar a[href="https://abctt.freeforums.net/"],
+			#topbar a[href="tipjars.html"] { display:none !important; }
+		</style>
 	</head>
 
 	<body>
