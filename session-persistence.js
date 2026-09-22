@@ -20,7 +20,11 @@
     if(typeof getABCEditorText==='function')return getABCEditorText();
     return document.getElementById('abc')?.value||'';
   }catch(e){return'';}}
-  function setText(v){if(typeof setABCEditorText==='function')setABCEditorText(v);else{const ta=document.getElementById('abc');if(ta)ta.value=v;}}
+  function setText(v){
+    if(window.gTheCM&&typeof window.gTheCM.setValue==='function')window.gTheCM.setValue(v);
+    else if(typeof setABCEditorText==='function')setABCEditorText(v);
+    else{const ta=document.getElementById('abc');if(ta)ta.value=v;}
+  }
   function save(){try{const abc=getText();if(!abc.trim()||abc===lastSavedText)return;localStorage.setItem(KEY,JSON.stringify({abc,savedAt:new Date().toISOString()}));lastSavedText=abc;}catch(e){}}
 
   function applyHandoffWhenReady(){
@@ -45,8 +49,17 @@
     const cm=window.gTheCM,ta=document.getElementById('abc');
     if(!cm&&!ta){setTimeout(attachPersistence,100);return;}
     attached=true;
-    if(!incoming && !getText().trim()){
-      try{const p=JSON.parse(localStorage.getItem(KEY)||'null');if(p&&p.abc){setText(p.abc);if(typeof window.RenderAsync==='function')window.RenderAsync(true,null);}}catch(e){}
+    if(!incoming){
+      // ABC Tools initializes its editor with its own default/example content.
+      // That content must not win over our explicitly saved last session.
+      try{
+        const p=JSON.parse(localStorage.getItem(KEY)||'null');
+        if(p&&p.abc&&p.abc.trim()){
+          setText(p.abc);lastSavedText=p.abc;
+          try{window.gIsFromShare=false;window.gIsDirty=true;window.gABCFromFile=true;}catch(e){}
+          if(typeof window.RenderAsync==='function')window.RenderAsync(true,null);
+        }
+      }catch(e){}
     }
     if(cm&&typeof cm.on==='function')cm.on('change',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
     else ta.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
