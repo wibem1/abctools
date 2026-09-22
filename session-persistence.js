@@ -15,6 +15,40 @@
   }
   const incoming=decodeIncoming();
 
+  // Read-only startup diagnostics. Capture state before our restore/handoff code runs.
+  let bootStored='', bootStoredAt='', bootTextarea='';
+  try{
+    const b=JSON.parse(localStorage.getItem(KEY)||'null');
+    bootStored=b?.abc||''; bootStoredAt=b?.savedAt||'';
+  }catch(e){}
+  try{bootTextarea=document.getElementById('abc')?.value||'';}catch(e){}
+  function titleOf(v){
+    const m=String(v||'').match(/^T:\\s*(.+)$/m);
+    return m?m[1].trim():'(kein T:)';
+  }
+  function addStartDiagnostic(){
+    const b=document.createElement('button');
+    b.type='button'; b.textContent='Start-Diagnose';
+    b.style.cssText='position:fixed;right:8px;bottom:8px;z-index:2147483647;padding:8px 10px';
+    b.onclick=()=>{
+      let nowStored='',nowAt='';
+      try{const n=JSON.parse(localStorage.getItem(KEY)||'null');nowStored=n?.abc||'';nowAt=n?.savedAt||'';}catch(e){}
+      let sw='nein';
+      try{sw=navigator.serviceWorker?.controller?'ja':'nein';}catch(e){}
+      alert(
+        'Beim Scriptstart localStorage: '+titleOf(bootStored)+'\\n'+
+        'Start-Zeitstempel: '+(bootStoredAt||'(keiner)')+'\\n'+
+        'Textfeld beim Scriptstart: '+titleOf(bootTextarea)+'\\n\\n'+
+        'Jetzt localStorage: '+titleOf(nowStored)+'\\n'+
+        'Jetzt-Zeitstempel: '+(nowAt||'(keiner)')+'\\n'+
+        'Jetzt sichtbares Textfeld: '+titleOf(getText())+'\\n'+
+        'Incoming ABC: '+(incoming?'ja':'nein')+'\\n'+
+        'Service Worker Controller: '+sw
+      );
+    };
+    document.body.appendChild(b);
+  }
+
   function textarea(){return document.getElementById('abc');}
   function getText(){return textarea()?.value||'';}
   function setText(v){
@@ -41,6 +75,7 @@
   }
 
   function start(){
+    addStartDiagnostic();
     ready(()=>{
       if(incoming && !handoffDone){
         handoffDone=true;
