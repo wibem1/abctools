@@ -54,7 +54,30 @@
        typeof window.RenderAsync==='function') fn();
     else setTimeout(()=>ready(fn),100);
   }
+  function titleOf(v){
+    const m=String(v||'').match(/^T:\\s*(.+)$/m);
+    return m?m[1].trim():'(kein T:)';
+  }
+  function storedText(){
+    try{return JSON.parse(localStorage.getItem(KEY)||'null')?.abc||'';}catch(e){return'';}
+  }
+  function addPersistenceDiagnostic(){
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent='Speicher-Diagnose';
+    b.style.cssText='position:fixed;right:8px;bottom:8px;z-index:2147483647;padding:8px 10px';
+    b.onclick=()=>{
+      alert(
+        'ABC-Tools-Editor: '+titleOf(getText())+'\\n'+
+        'Gespeicherte Session: '+titleOf(storedText())+'\\n'+
+        'Identisch: '+(getText()===storedText()?'ja':'nein')
+      );
+    };
+    document.body.appendChild(b);
+  }
+
   function start(){
+    addPersistenceDiagnostic();
     ready(()=>{
       if(incoming && !handoffDone){
         handoffDone=true;
