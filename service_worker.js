@@ -12,7 +12,7 @@
 //
 //
 //
-// Updated 21 Sep 2026 1830
+// Updated 22 Sep 2026 live-editor persistence fix
 //
 //
 //
@@ -26,7 +26,7 @@
 //
 //
 
-const cacheName = 'abctoolscache-wibem1-3';
+const cacheName = 'abctoolscache-wibem1-4';
 
 const contentToCache = [
     'abctools.html',
