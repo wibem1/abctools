@@ -77,6 +77,20 @@
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save();});
   }
 
-  function start(){applyHandoffWhenReady();attachPersistenceWhenReady();}
+  function titleOf(s){const m=String(s||'').match(/^T:\s*(.*)$/m);return m?m[1].trim():'(kein T:)';}
+  function addDiagnostic(){
+    if(document.getElementById('abc-session-diagnostic'))return;
+    const b=document.createElement('button');
+    b.id='abc-session-diagnostic';b.type='button';b.textContent='Speicher-Diagnose';
+    b.style.cssText='position:fixed;right:14px;top:58px;z-index:10000;padding:8px 11px;border-radius:8px;border:1px solid #777;background:#fff;color:#111;font:13px sans-serif;box-shadow:0 1px 5px #0003';
+    b.onclick=function(){
+      let saved='',savedAt='';
+      try{const p=JSON.parse(localStorage.getItem(KEY)||'null');saved=p?.abc||'';savedAt=p?.savedAt||'';}catch(e){}
+      const live=getText(),ta=document.getElementById('abc')?.value||'',cm=(window.gTheCM&&typeof window.gTheCM.getValue==='function')?window.gTheCM.getValue():'';
+      alert('ABC Tools Speicher-Diagnose\n\nGespeichert: '+titleOf(saved)+'\nZeit: '+(savedAt||'(keine)')+'\n\nLive getText: '+titleOf(live)+'\nCodeMirror: '+titleOf(cm)+'\nTextarea: '+titleOf(ta)+'\n\nStartup fertig: '+String(window.gCustomInstrumentsInitComplete===true)+'\nIncoming URL: '+String(!!incoming));
+    };
+    document.body.appendChild(b);
+  }
+  function start(){addDiagnostic();applyHandoffWhenReady();attachPersistenceWhenReady();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
