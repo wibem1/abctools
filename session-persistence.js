@@ -44,32 +44,39 @@
     history.replaceState(null,'',location.pathname+location.hash);
   }
 
-  function attachPersistence(){
+  function attachPersistenceWhenReady(){
     if(attached)return;
+    // Do not restore or start autosaving until ABC Tools has completely
+    // finished its own asynchronous startup. Otherwise its startup can
+    // overwrite the restored score (and the autosaver can then persist that
+    // stale startup score again).
+    if(window.gCustomInstrumentsInitComplete!==true || typeof window.RenderAsync!=='function'){
+      setTimeout(attachPersistenceWhenReady,100);return;
+    }
     const cm=window.gTheCM,ta=document.getElementById('abc');
-    if(!cm&&!ta){setTimeout(attachPersistence,100);return;}
-    attached=true;
+    if(!cm&&!ta){setTimeout(attachPersistenceWhenReady,100);return;}
+
     if(!incoming){
-      // ABC Tools initializes its editor with its own default/example content.
-      // That content must not win over our explicitly saved last session.
       try{
         const p=JSON.parse(localStorage.getItem(KEY)||'null');
         if(p&&p.abc&&p.abc.trim()){
-          setText(p.abc);lastSavedText=p.abc;
+          setText(p.abc);
+          lastSavedText=p.abc;
           try{window.gIsFromShare=false;window.gIsDirty=true;window.gABCFromFile=true;}catch(e){}
-          if(typeof window.RenderAsync==='function')window.RenderAsync(true,null);
+          window.RenderAsync(true,null);
         }
       }catch(e){}
     }
+
+    // Arm persistence only after the restore/handoff phase is complete.
+    attached=true;
     if(cm&&typeof cm.on==='function')cm.on('change',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
-    else ta.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
-    // Programmatic file loads in ABC Tools do not reliably emit an input event
-    // on the original textarea. Poll the live editor as a safety net.
+    else if(ta)ta.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
     setInterval(save,750);
     window.addEventListener('pagehide',save);
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save();});
   }
 
-  function start(){attachPersistence();applyHandoffWhenReady();}
+  function start(){applyHandoffWhenReady();attachPersistenceWhenReady();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
