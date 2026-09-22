@@ -69,6 +69,10 @@
           lastSavedText=p.abc;
           try{window.gIsFromShare=false;window.gIsDirty=true;window.gABCFromFile=true;}catch(e){}
           window.RenderAsync(true,null);
+          // ABC Tools can perform a late startup restore after reporting ready.
+          // Re-assert the user's saved session after that final startup phase.
+          setTimeout(()=>{setText(p.abc);window.RenderAsync(true,null);},500);
+          setTimeout(()=>{setText(p.abc);window.RenderAsync(true,null);},1500);
         }
       }catch(e){}
     }
