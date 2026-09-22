@@ -26,7 +26,7 @@
 //
 //
 
-const cacheName = 'abctoolscache-wibem1-8';
+const cacheName = 'abctoolscache-wibem1-9';
 
 const contentToCache = [
     'abctools.html',
