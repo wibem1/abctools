@@ -1,50 +1,55 @@
-// Local session persistence + handoff receiver for the wibem1 fork of ABC Tools.
+// Local session persistence + Minimal Composer handoff for the wibem1 fork of ABC Tools.
 (function(){
   'use strict';
-  const KEY='wibem1_abctools_last_session_v1', HANDOFF='abc';
-  let timer=null, attached=false;
-  function editor(){
-    if(window.gTheCM&&typeof window.gTheCM.getValue==='function')return window.gTheCM;
-    const ta=document.getElementById('abc');
-    return ta?{getValue:()=>ta.value,setValue:v=>{ta.value=v;ta.dispatchEvent(new Event('input',{bubbles:true}));},clearHistory:()=>{},on:(ev,fn)=>ta.addEventListener('input',fn)}:null;
-  }
-  function save(ed){try{localStorage.setItem(KEY,JSON.stringify({abc:ed.getValue(),savedAt:new Date().toISOString()}));}catch(e){console.warn('ABC Tools session autosave failed:',e);}}
+  const KEY='wibem1_abctools_last_session_v1';
+  let timer=null,attached=false,handoffDone=false;
+
   function decodeIncoming(){
     try{
-      const encoded=new URLSearchParams(location.search).get(HANDOFF); if(!encoded)return null;
-      let s=encoded.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='=';
+      let s=new URLSearchParams(location.search).get('abc'); if(!s)return null;
+      s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='=';
       const bytes=Uint8Array.from(atob(s),ch=>ch.charCodeAt(0));
       const text=new TextDecoder().decode(bytes);
       return text.trim()?text:null;
     }catch(e){console.warn('ABC Tools handoff decode failed:',e);return null;}
   }
-  function setAndRender(ed,text){
-    ed.setValue(text); if(ed.clearHistory)ed.clearHistory(); save(ed);
-    // ABC Tools normally renders on editor changes; explicitly request its standard render path as fallback.
-    try{if(typeof window.RenderABC==='function')window.RenderABC();}catch(e){}
-  }
-  function restore(ed){
-    const incoming=decodeIncoming();
-    if(incoming){
-      setAndRender(ed,incoming);
-      history.replaceState(null,'',location.pathname+location.hash);
-      return true;
+  const incoming=decodeIncoming();
+
+  function getText(){try{return typeof getABCEditorText==='function'?getABCEditorText():document.getElementById('abc')?.value||'';}catch(e){return'';}}
+  function setText(v){if(typeof setABCEditorText==='function')setABCEditorText(v);else{const ta=document.getElementById('abc');if(ta)ta.value=v;}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify({abc:getText(),savedAt:new Date().toISOString()}));}catch(e){}}
+
+  function applyHandoffWhenReady(){
+    if(!incoming||handoffDone)return;
+    // ABC Tools has its own asynchronous startup. Do not inject before it has
+    // finished clearing/restoring its editor, otherwise startup overwrites us.
+    if(window.gCustomInstrumentsInitComplete!==true || typeof window.RenderAsync!=='function'){
+      setTimeout(applyHandoffWhenReady,100); return;
     }
-    try{
-      const raw=localStorage.getItem(KEY); if(!raw||ed.getValue().trim())return false;
-      const payload=JSON.parse(raw); if(typeof payload.abc!=='string'||!payload.abc.trim())return false;
-      setAndRender(ed,payload.abc); return true;
-    }catch(e){console.warn('ABC Tools session restore failed:',e);return false;}
+    handoffDone=true;
+    setText(incoming);
+    try{window.gIsFromShare=false;window.gIsDirty=true;window.gABCFromFile=true;}catch(e){}
+    save();
+    window.RenderAsync(true,null,function(){
+      try{if(typeof window.DoMinimize==='function')window.DoMinimize();}catch(e){}
+    });
+    history.replaceState(null,'',location.pathname+location.hash);
   }
-  function attach(){
-    if(attached)return true;
-    const ed=editor(); if(!ed)return false;
-    attached=true; restore(ed);
-    ed.on('change',function(){clearTimeout(timer);timer=setTimeout(()=>save(ed),350);});
-    window.addEventListener('pagehide',()=>save(ed));
-    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save(ed);});
-    return true;
+
+  function attachPersistence(){
+    if(attached)return;
+    const cm=window.gTheCM,ta=document.getElementById('abc');
+    if(!cm&&!ta){setTimeout(attachPersistence,100);return;}
+    attached=true;
+    if(!incoming && !getText().trim()){
+      try{const p=JSON.parse(localStorage.getItem(KEY)||'null');if(p&&p.abc){setText(p.abc);if(typeof window.RenderAsync==='function')window.RenderAsync(true,null);}}catch(e){}
+    }
+    if(cm&&typeof cm.on==='function')cm.on('change',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
+    else ta.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
+    window.addEventListener('pagehide',save);
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save();});
   }
-  function wait(){if(!attach())setTimeout(wait,100);}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wait);else wait();
+
+  function start(){attachPersistence();applyHandoffWhenReady();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
