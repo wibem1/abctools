@@ -67,29 +67,15 @@
     b.textContent='Speicher-Diagnose';
     b.style.cssText='position:fixed;right:8px;bottom:8px;z-index:2147483647;padding:8px 10px';
     b.onclick=()=>{
-      const rows=[];
-      document.querySelectorAll('textarea,input,[contenteditable="true"],.CodeMirror').forEach((el,i)=>{
-        let v='';
-        try{
-          if(el.CodeMirror&&typeof el.CodeMirror.getValue==='function')v=el.CodeMirror.getValue();
-          else if(typeof el.value==='string')v=el.value;
-          else v=el.innerText||el.textContent||'';
-        }catch(e){}
-        const cs=getComputedStyle(el);
-        const visible=cs.display!=='none'&&cs.visibility!=='hidden'&&el.getClientRects().length>0;
-        rows.push(
-          (i+1)+'. '+el.tagName+
-          ' id='+(el.id||'-')+
-          ' class='+(String(el.className||'-').slice(0,40))+
-          ' sichtbar='+(visible?'ja':'nein')+
-          ' -> '+titleOf(v)
-        );
-      });
+      const ta=document.getElementById('abc');
+      const attr=ta?ta.getAttribute('value'):null;
       alert(
-        'ABC-Tools-Editor: '+titleOf(getText())+'\\n'+
-        'Gespeicherte Session: '+titleOf(storedText())+'\\n'+
-        'Identisch: '+(getText()===storedText()?'ja':'nein')+'\\n\\n'+
-        'EDITOR-ELEMENTE:\\n'+rows.join('\\n')
+        '#abc.value: '+titleOf(ta?.value||'')+'\\n'+
+        '#abc.defaultValue: '+titleOf(ta?.defaultValue||'')+'\\n'+
+        '#abc.textContent: '+titleOf(ta?.textContent||'')+'\\n'+
+        '#abc.innerHTML: '+titleOf(ta?.innerHTML||'')+'\\n'+
+        '#abc value-Attribut: '+titleOf(attr||'')+'\\n'+
+        'getABCEditorText(): '+titleOf(getText())
       );
     };
     document.body.appendChild(b);
