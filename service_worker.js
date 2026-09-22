@@ -26,7 +26,7 @@
 //
 //
 
-const cacheName = 'abctoolscache-wibem1-7';
+const cacheName = 'abctoolscache-wibem1-8';
 
 const contentToCache = [
     'abctools.html',
@@ -198,20 +198,28 @@ self.addEventListener('fetch', (e) => {
 
     e.respondWith((async () => {
 
-        const r = await caches.match(e.request,{ignoreSearch: true, ignoreVary:true});
+        // App code must be network-first so a newly deployed fix is actually
+        // visible immediately. Cached copies remain the offline fallback.
+        const url = new URL(e.request.url);
+        const isAppCode = url.pathname.endsWith('/abctools.html') ||
+                          url.pathname.endsWith('/session-persistence.js') ||
+                          url.pathname.endsWith('/minimal-composer-handoff.js') ||
+                          url.pathname.endsWith('/app-min.js');
 
-        if (r){
-
-            //console.log(`[Service Worker] Returning cached resource: ${e.request.url}`);
-
-            return r;
+        if (!isAppCode){
+            const r = await caches.match(e.request,{ignoreSearch: true, ignoreVary:true});
+            if (r) return r;
         }
 
         try{
 
             //console.log(`[Service Worker] Fetching resource: ${e.request.url}`);
 
-            const response = await fetch(e.request);
+            const response = await fetch(e.request,{cache: isAppCode ? 'no-store' : 'default'});
+            if (isAppCode && response && response.ok){
+                const cache = await caches.open(cacheName);
+                await cache.put(e.request,response.clone());
+            }
 
             //Don't cache any resources
 
@@ -229,9 +237,8 @@ self.addEventListener('fetch', (e) => {
             
         }
         catch (error){
-
-            //console.log("[Service Worker] fetch error: "+error);
-    
+            const fallback = await caches.match(e.request,{ignoreSearch:true,ignoreVary:true});
+            if (fallback) return fallback;
         }
     })());
 });
