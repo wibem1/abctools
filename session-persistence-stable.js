@@ -1,0 +1,99 @@
+// Session persistence + Minimal Composer handoff for the wibem1 fork.
+(function(){
+  'use strict';
+  const KEY='wibem1_abctools_last_session_v1';
+  let timer=null,handoffDone=false,lastSaved='';
+
+  function decodeIncoming(){
+    try{
+      let s=new URLSearchParams(location.search).get('abc'); if(!s)return null;
+      s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='=';
+      const bytes=Uint8Array.from(atob(s),ch=>ch.charCodeAt(0));
+      const text=new TextDecoder().decode(bytes);
+      return text.trim()?text:null;
+    }catch(e){return null;}
+  }
+  const incoming=decodeIncoming();
+
+  // Use ABC Tools' own editor API. This is essential because the active editor
+  // may be the textarea or CodeMirror depending on ABC Tools' current mode.
+  function getText(){
+    try{
+      return typeof window.getABCEditorText==='function'
+        ? (window.getABCEditorText()||'')
+        : (document.getElementById('abc')?.value||'');
+    }catch(e){return'';}
+  }
+  function setText(v){
+    try{
+      if(typeof window.setABCEditorText==='function') window.setABCEditorText(v);
+      else {
+        const ta=document.getElementById('abc');
+        if(ta) ta.value=v;
+      }
+    }catch(e){}
+  }
+  function render(){
+    try{if(typeof window.RenderAsync==='function')window.RenderAsync(true,null);}catch(e){}
+  }
+  function save(){
+    try{
+      const abc=getText();
+      if(!abc.trim() || abc===lastSaved)return;
+      localStorage.setItem(KEY,JSON.stringify({abc,savedAt:new Date().toISOString()}));
+      lastSaved=abc;
+    }catch(e){}
+  }
+  function saved(){
+    try{return JSON.parse(localStorage.getItem(KEY)||'null')?.abc||'';}catch(e){return'';}
+  }
+  function ready(fn){
+    if(window.gCustomInstrumentsInitComplete===true &&
+       typeof window.getABCEditorText==='function' &&
+       typeof window.setABCEditorText==='function' &&
+       typeof window.RenderAsync==='function') fn();
+    else setTimeout(()=>ready(fn),100);
+  }
+
+
+  function start(){
+    ready(()=>{
+      if(incoming && !handoffDone){
+        handoffDone=true;
+        setText(incoming);
+        render();
+        save();
+        history.replaceState(null,'',location.pathname+location.hash);
+      }else{
+        const abc=saved();
+        if(abc.trim()){
+          setText(abc);
+          lastSaved=abc;
+          render();
+        }
+      }
+
+      // ABC Tools imports can replace editor content programmatically without
+      // emitting DOM input/change events. Poll the official editor API so the
+      // currently active editor is always persisted.
+      let lastSeen=getText();
+      setInterval(()=>{
+        const now=getText();
+        if(now!==lastSeen){
+          lastSeen=now;
+          clearTimeout(timer);
+          timer=setTimeout(save,250);
+        }
+      },400);
+
+      const ta=document.getElementById('abc');
+      if(ta){
+        ta.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(save,250);});
+        ta.addEventListener('change',save);
+      }
+      window.addEventListener('pagehide',save);
+      document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save();});
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
