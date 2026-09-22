@@ -2,7 +2,7 @@
 (function(){
   'use strict';
   const KEY='wibem1_abctools_last_session_v1';
-  let timer=null,attached=false,handoffDone=false;
+  let timer=null,attached=false,handoffDone=false,lastSavedText='';
 
   function decodeIncoming(){
     try{
@@ -15,9 +15,13 @@
   }
   const incoming=decodeIncoming();
 
-  function getText(){try{return typeof getABCEditorText==='function'?getABCEditorText():document.getElementById('abc')?.value||'';}catch(e){return'';}}
+  function getText(){try{
+    if(window.gTheCM&&typeof window.gTheCM.getValue==='function')return window.gTheCM.getValue();
+    if(typeof getABCEditorText==='function')return getABCEditorText();
+    return document.getElementById('abc')?.value||'';
+  }catch(e){return'';}}
   function setText(v){if(typeof setABCEditorText==='function')setABCEditorText(v);else{const ta=document.getElementById('abc');if(ta)ta.value=v;}}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify({abc:getText(),savedAt:new Date().toISOString()}));}catch(e){}}
+  function save(){try{const abc=getText();if(!abc.trim()||abc===lastSavedText)return;localStorage.setItem(KEY,JSON.stringify({abc,savedAt:new Date().toISOString()}));lastSavedText=abc;}catch(e){}}
 
   function applyHandoffWhenReady(){
     if(!incoming||handoffDone)return;
@@ -46,6 +50,9 @@
     }
     if(cm&&typeof cm.on==='function')cm.on('change',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
     else ta.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(save,350);});
+    // Programmatic file loads in ABC Tools do not reliably emit an input event
+    // on the original textarea. Poll the live editor as a safety net.
+    setInterval(save,750);
     window.addEventListener('pagehide',save);
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save();});
   }
