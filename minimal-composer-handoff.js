@@ -7,8 +7,9 @@
     return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   }
   function currentABC(){
-    if(typeof window.getABCEditorText==='function')return window.getABCEditorText();
+    // CodeMirror is the live editor. getABCEditorText can lag after a file load.
     if(window.gTheCM&&typeof window.gTheCM.getValue==='function')return window.gTheCM.getValue();
+    if(typeof window.getABCEditorText==='function')return window.getABCEditorText();
     return document.getElementById('abc')?.value||'';
   }
   function selectedTune(text){
