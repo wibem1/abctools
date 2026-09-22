@@ -42,6 +42,9 @@
         'Jetzt localStorage: '+titleOf(nowStored)+'\\n'+
         'Jetzt-Zeitstempel: '+(nowAt||'(keiner)')+'\\n'+
         'Jetzt sichtbares Textfeld: '+titleOf(getText())+'\\n'+
+        'ABC-Tools Editor: '+titleOf(typeof window.getABCEditorText==='function'?window.getABCEditorText():'')+'\\n'+
+        'CodeMirror: '+titleOf(window.gTheCM&&typeof window.gTheCM.getValue==='function'?window.gTheCM.getValue():'')+'\\n'+
+        'Storage mit Abendlicht: '+(function(){try{const a=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),v=localStorage.getItem(k)||'';if(v.includes('Abendlicht'))a.push(k);}return a.length?a.join(', '):'(keiner)';}catch(e){return '(Fehler)';}})()+'\\n'+
         'Incoming ABC: '+(incoming?'ja':'nein')+'\\n'+
         'Service Worker Controller: '+sw
       );
