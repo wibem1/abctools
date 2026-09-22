@@ -135,9 +135,7 @@
 
 						<font size="5" face="Comic Sans MS" id="toolpagetitle">ABC Transcription Tools</font>
 
-						<p>
-							<a href="userguide.html" target="_blank">User Guide</a>&nbsp;-&nbsp;<a href="tunesources.html" target="_blank" onclick="AddFromSearch(event,null);">Search for Tunes</a>&nbsp;-&nbsp;<a href="abc_standard_v2.1.pdf" target="_blank">ABC Spec</a>&nbsp;-&nbsp;<a href="general_midi_extended_v10.pdf" target="_blank">MIDI</a>&nbsp;-&nbsp;<a href="https://michaeleskin.com/tunebooks.html" target="_blank">Tunebooks</a>&nbsp;-&nbsp;<a href="credits.html" target="_blank">Credits</a>&nbsp;-&nbsp;<a href="https://www.facebook.com/groups/223783166918600" target="_blank">Facebook</a>&nbsp;-&nbsp;<a href="https://abctt.freeforums.net/" target="_blank">Forum</a>&nbsp;-&nbsp;<a href="tipjars.html" target="_blank">Tip Jars</a>
-						</p>
+						<p><a href="tunesources.html" target="_blank" onclick="AddFromSearch(event,null);">Search for Tunes</a></p>
 
 					</div>
 
@@ -151,9 +149,7 @@
 						<input style="margin-right:8px" class="newabcfile btn btn-top" id="newabcfile" onclick="AddABC();" type="button" value="Add" title="Add your own tunes, restore from a saved snapshot, seach for tunes, re-order tunes, delete tunes, or add examples tunes and song templates to the ABC"/>
 						<input style="margin-right:8px" class="saveabcfiledisabled btn btn-top" id="saveabcfile" onclick="SaveABC();" type="button" value="Save" title="Saves the current ABC text to a file"/>
 						<input style="margin-right:8px" class="saveaspdfdisabled btn btn-top" id="saveaspdf" onclick="PDFExportDialog();" type="button" value="Export PDF" title="Exports a PDF tunebook"/>
-						<input style="margin-right:8px" class="saveaswebsitedisabled btn btn-top" id="saveaswebsite" onclick="generateWebsite();" type="button" value="Export Website" title="Exports the tunebook as a website"/>
 						<input style="margin-right:8px;padding-left:20px;padding-right:20px;" class="playbuttondisabled btn btn-play" id="playbutton" onclick="PlayABC(event);" type="button" value="Play" title="Opens the ABC player with the currently selected tune.&nbsp;&nbsp;Alt-click to play a random tune in the current ABC tunebook.&nbsp;&nbsp;Press F4 to open the Player."/>
-						<input style="margin-right:8px;padding-left:20px;padding-right:20px;" class="playbuttondisabled btn btn-train" id="tunetrainerbutton" onclick="TuneTrainerTopBar(event);" type="button" value="Train" title="Opens the Tune Trainer with the currently selected tune.&nbsp;&nbsp;Alt-click to train on a random tune in the current ABC tunebook."/>
 						<input style="margin-right:8px" class="rawmodebuttondisabled btn btn-rawmode-off" id="rawmodebutton" onclick="ToggleRawMode(event)" type="button" value="Highlighting" title="When On, highlight notation by selecting the ABC text or highlight ABC text by clicking on the notation. Shift-click to temporarily hide incorrect-measure highlighting."/>
 						<input style="padding-left:20px;padding-right:20px" class="morecommands btn btn-top context-menu" id="morecommands" type="button" value="☰" title="Brings up a menu with additional useful commands"/>
 					</div>
@@ -175,22 +171,6 @@
 
 						<input type="radio" id="b1" value="noten" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
 						<label for="b1" class="btn btn-tab" title="Shows standard music notation" style="margin-right:16px;">Notation</label>
-						<input type="radio" id="b2" value="notenames" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
-						<label for="b2" class="btn btn-tab" title="Shows note names tablature" style="margin-right:16px;">Names</label>
-						<input type="radio" id="b3" value="mandolin" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
-						<label for="b3" class="btn btn-tab" title="Shows GDAE Mandolin tablature" style="margin-right:16px;">Mandolin</label>
-						<input type="radio" id="b4" value="gdad" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
-						<label for="b4" class="btn btn-tab" id="b4label" title="Shows GDAD Bouzouki tablature" style="margin-right:16px;">GDAD</label>
-						<input type="radio" id="b5" value="cgdae" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
-						<label for="b5" class="btn btn-tab" id="b5label" title="Shows CGDAE 5-string Fiddle tablature" style="margin-right:16px;">CGDAE</label>
-						<input type="radio" id="b6" value="guitare" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
-						<label for="b6" class="btn btn-tab" title="Shows standard EADGBE Guitar tablature" style="margin-right:16px;">Guitar</label>
-						<input type="radio" id="b7" value="guitard" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
-						<label for="b7" class="btn btn-tab" title="Shows DADGAD Guitar tablature" style="margin-right:16px;">DADGAD</label>
-						<input type="radio" id="b8" value="uke" name="notenodertab" class="hidebutton" onclick="ChangeTab()">
-						<label for="b8" class="btn btn-tab" title="Shows Ukulele tablature (G string used for notes lower than C)"  style="margin-right:16px;">Uke</label>
-						<input type="radio" id="b9" value="whistle" name="notenodertab" class="hidebutton" onclick="ChangeTab()"/>
-						<label for="b9" class="btn btn-tab" id="b9label" title="Shows Tin Whistle (D) tablature" style="margin-right:0px;">Whistle</label>
 
 					</div>
 
@@ -201,7 +181,6 @@
 						<input class="snapshotbutton btn btn-snapshotbutton" id="snapshotbutton" onclick="SaveSnapshot(event);" type="button" value="Snapshot" title="Saves a Snapshot of the contents of the ABC editor to browser storage.&nbsp;&nbsp;Click for Snapshot #1, Shift-click for Snapshot #2, Alt-click for Snapshot #3, Shift-Alt-click for Snapshot #4."/>
 						<input class="restorebutton btn btn-restorebutton" id="restorebutton" onclick="RestoreSnapshot(event,false,false);" type="button" value="Restore" title="Replaces the contents of the ABC editor with a Snapshot saved in browser storage.&nbsp;&nbsp;Click for Snapshot #1, Shift-click for Snapshot #2, Alt-click for Snapshot #3, Shift-Alt-click for Snapshot #4."/>
 						<input class="toggleadvancedcontrols btn btn-toggleadvancedcontrols" id="toggleadvancedcontrols" onclick="AdvancedControlsDialog()" type="button" value="More Tools" title="Shows the More ABC Tools dialog where you can hide or strip chords and other ABC annotations, inject instrument tablature, as well as perform other ABC operations"/>
-						<input class="togglesharecontrols btn btn-togglesharecontrols" id="togglesharecontrols" onclick="SharingControlsDialog()" type="button" value="Sharing"  title="Shows the Sharing dialog"/>
 						<input class="clearbutton btn btn-clearbutton" id="clearbutton" onclick="Clear()" type="button" value="Clear" title="Clears all the ABC"/>
 
 					</div>
@@ -219,12 +198,6 @@
 				<p id="desktop_use_message"><strong>Drag-and-drop</strong> ABC, MusicXML, BWW, or MIDI files on the editor area to add them.<br><br><br><strong>Resize the ABC Editor</strong> by clicking and dragging its lower right corner.</p>
 
 				<p id="notation-placeholder-text-2">Click <strong>Search for Tunes</strong> to find tunes by name.</p>
-
-				<input class="notation-placeholder-button btn btn-placeholder" style="margin-right:18px" onclick="showWelcomeScreen();" type="button" value="Show Introduction" title="Shows the introduction dialog"/>
-				
-				<input id="guidedtourbutton" class="notation-placeholder-button btn btn-placeholder" style="margin-right:18px;background:#f5fbfd;border:1px solid #a7c1cf;color:#245a73;" onclick="ShowABCGuidedTourSelector();" type="button" value="✦ Guided Tours ✦" title="Explore the ABC Transcription Tools with 8 step-by-step guided tours."/>
-				
-				<input class="notation-placeholder-button btn btn-placeholder" onclick="showWhatsNewScreen();" type="button" value="What's New" title="Shows the latest update info dialog"/>
 			
 			</div>
 			
