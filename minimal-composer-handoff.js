@@ -33,10 +33,22 @@
   function add(){
     if(document.getElementById('minimal-composer-return'))return;
     const b=document.createElement('button');
-    b.id='minimal-composer-return';b.type='button';b.textContent='In Minimal Composer öffnen';
-    b.title='Aktuelle ABC-Partitur an Minimal Composer übergeben';
+    const source=(()=>{try{return sessionStorage.getItem('wibem1_abctools_source')||'';}catch(e){return'';}})();
+    b.id='minimal-composer-return';b.type='button';
+    b.textContent=source==='composeme'?'Zurück zu ComposeMe':'In Minimal Composer öffnen';
+    b.title=source==='composeme'?'ABC Tools schließen und zu ComposeMe zurückkehren':'Aktuelle ABC-Partitur an Minimal Composer übergeben';
     b.style.cssText='position:fixed;right:14px;top:14px;z-index:10000;padding:9px 12px;border-radius:8px;border:1px solid #777;background:#fff;color:#111;font:14px sans-serif;box-shadow:0 1px 5px #0003';
-    b.onclick=async function(){const abc=selectedTune(currentABC());if(!abc.trim())return;try{if(window.opener&&!window.opener.closed){window.opener.postMessage({type:'minimal-composer-abc-return',abc},location.origin);window.close();return;}}catch(e){}location.href='https://wibem1.github.io/Minimal-Composer/?abc='+encodeURIComponent(encode(abc));};
+    b.onclick=async function(){
+      if(source==='composeme'){
+        try{sessionStorage.removeItem('wibem1_abctools_source');}catch(e){}
+        try{if(window.opener&&!window.opener.closed){window.close();return;}}catch(e){}
+        location.href='https://wibem1.github.io/ComposeMe/';
+        return;
+      }
+      const abc=selectedTune(currentABC());if(!abc.trim())return;
+      try{if(window.opener&&!window.opener.closed){window.opener.postMessage({type:'minimal-composer-abc-return',abc},location.origin);window.close();return;}}catch(e){}
+      location.href='https://wibem1.github.io/Minimal-Composer/?abc='+encodeURIComponent(encode(abc));
+    };
     document.body.appendChild(b);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
