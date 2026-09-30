@@ -39,6 +39,7 @@
     }catch(e){return null;}
   }
   const incoming=incomingPayload();
+  try{if(new URLSearchParams(location.search).get('handoff')==='composeme')sessionStorage.setItem('wibem1_abctools_source','composeme');}catch(e){}
 
   function getText(){
     try{
