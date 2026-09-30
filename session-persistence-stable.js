@@ -2,6 +2,7 @@
 (function(){
   'use strict';
   const KEY='wibem1_abctools_last_session_v1';
+  const HANDOFF_KEY='wibem1_abctools_handoff_v1';
   let timer=null,handoffDone=false,lastSaved='';
 
   function decodeBase64Url(value){
@@ -26,6 +27,13 @@
       if(midi){
         const bytes=decodeBase64Url(midi);
         return bytes.length?{format:'midi',bytes}:null;
+      }
+      if(q.get('handoff')==='composeme'){
+        const saved=JSON.parse(localStorage.getItem(HANDOFF_KEY)||'null');
+        localStorage.removeItem(HANDOFF_KEY);
+        if(saved?.format==='abc'&&typeof saved.content==='string')return{format:'abc',text:saved.content};
+        if(saved?.format==='musicxml'&&typeof saved.content==='string')return{format:'musicxml',text:saved.content};
+        if(saved?.format==='midi'&&typeof saved.data==='string')return{format:'midi',bytes:decodeBase64Url(saved.data)};
       }
       return null;
     }catch(e){return null;}
