@@ -1,22 +1,37 @@
-// Session persistence + Minimal Composer handoff for the wibem1 fork.
+// Session persistence + ComposeMe / Minimal Composer handoff for the wibem1 fork.
 (function(){
   'use strict';
   const KEY='wibem1_abctools_last_session_v1';
   let timer=null,handoffDone=false,lastSaved='';
 
-  function decodeIncoming(){
+  function decodeBase64Url(value){
+    let s=String(value||'').replace(/-/g,'+').replace(/_/g,'/');
+    while(s.length%4)s+='=';
+    return Uint8Array.from(atob(s),ch=>ch.charCodeAt(0));
+  }
+  function incomingPayload(){
     try{
-      let s=new URLSearchParams(location.search).get('abc'); if(!s)return null;
-      s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='=';
-      const bytes=Uint8Array.from(atob(s),ch=>ch.charCodeAt(0));
-      const text=new TextDecoder().decode(bytes);
-      return text.trim()?text:null;
+      const q=new URLSearchParams(location.search);
+      const abc=q.get('abc');
+      if(abc){
+        const text=new TextDecoder().decode(decodeBase64Url(abc));
+        return text.trim()?{format:'abc',text}:null;
+      }
+      const musicxml=q.get('musicxml');
+      if(musicxml){
+        const text=new TextDecoder().decode(decodeBase64Url(musicxml));
+        return text.trim()?{format:'musicxml',text}:null;
+      }
+      const midi=q.get('midi');
+      if(midi){
+        const bytes=decodeBase64Url(midi);
+        return bytes.length?{format:'midi',bytes}:null;
+      }
+      return null;
     }catch(e){return null;}
   }
-  const incoming=decodeIncoming();
+  const incoming=incomingPayload();
 
-  // Use ABC Tools' own editor API. This is essential because the active editor
-  // may be the textarea or CodeMirror depending on ABC Tools' current mode.
   function getText(){
     try{
       return typeof window.getABCEditorText==='function'
@@ -54,15 +69,33 @@
        typeof window.RenderAsync==='function') fn();
     else setTimeout(()=>ready(fn),100);
   }
-
+  function importAsFile(payload){
+    const input=document.getElementById('selectabcfile');
+    if(!input||typeof DataTransfer!=='function')return false;
+    let file;
+    if(payload.format==='musicxml'){
+      file=new File([payload.text],'ComposeMe.musicxml',{type:'application/vnd.recordare.musicxml+xml'});
+    }else if(payload.format==='midi'){
+      file=new File([payload.bytes],'ComposeMe.mid',{type:'audio/midi'});
+    }else return false;
+    const transfer=new DataTransfer();
+    transfer.items.add(file);
+    input.files=transfer.files;
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+    return true;
+  }
 
   function start(){
     ready(()=>{
       if(incoming && !handoffDone){
         handoffDone=true;
-        setText(incoming);
-        render();
-        save();
+        if(incoming.format==='abc'){
+          setText(incoming.text);
+          render();
+          save();
+        }else if(!importAsFile(incoming)){
+          console.warn('ABC Tools handoff could not import',incoming.format);
+        }
         history.replaceState(null,'',location.pathname+location.hash);
       }else{
         const abc=saved();
@@ -73,9 +106,6 @@
         }
       }
 
-      // ABC Tools imports can replace editor content programmatically without
-      // emitting DOM input/change events. Poll the official editor API so the
-      // currently active editor is always persisted.
       let lastSeen=getText();
       setInterval(()=>{
         const now=getText();
