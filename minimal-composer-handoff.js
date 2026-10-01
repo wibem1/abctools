@@ -31,12 +31,18 @@
     return text.slice(starts[n],end).trim();
   }
 
-  function stripComposeMeShortNames(){
-    let text=currentABC();
-    const isComposeMeTitle=/^T:\s*ComposeMe\s*$/m.test(text);
+  function normalizeComposeMeABC(){
     const source=(()=>{try{return sessionStorage.getItem('wibem1_abctools_source')||'';}catch(e){return'';}})();
-    if(!text||(source!=='composeme'&&!isComposeMeTitle)||!/\bsnm="/.test(text))return false;
-    const cleaned=text.replace(/\s+snm="[^"]*"/g,'');
+    if(source!=='composeme')return false;
+    const text=currentABC();
+    if(!text||!/^X:\s*1\s*$/m.test(text))return false;
+    let cleaned=text;
+    let title='';
+    try{title=sessionStorage.getItem('wibem1_composeme_title')||'';}catch(e){}
+    if(title.trim())cleaned=cleaned.replace(/^T:\s*ComposeMe\s*$/m,'T:'+title.trim());
+    cleaned=cleaned.replace(/\s+snm="[^"]*"/g,'');
+    cleaned=cleaned.replace(/nm="Klavier\s*::\s*rechte Hand"/g,'nm="Klavier"');
+    cleaned=cleaned.replace(/\s+nm="Klavier\s*::\s*linke Hand"/g,'');
     if(cleaned===text)return false;
     try{
       if(window.gTheCM&&typeof window.gTheCM.setValue==='function')window.gTheCM.setValue(cleaned);
@@ -44,16 +50,18 @@
         const ta=document.getElementById('abc');
         if(ta){ta.value=cleaned;ta.dispatchEvent(new Event('input',{bubbles:true}));}
       }
+      if(typeof window.RenderAsync==='function')window.RenderAsync(true,null);
       return true;
     }catch(e){return false;}
   }
+
   function scheduleComposeMeCleanup(){
     let tries=0;
     const timer=setInterval(()=>{
       tries+=1;
       // MIDI -> ABC can take a while on mobile. Keep watching long enough for
       // the generated V: headers to appear, then remove snm immediately.
-      if(stripComposeMeShortNames()||tries>=240)clearInterval(timer);
+      if(normalizeComposeMeABC()||tries>=240)clearInterval(timer);
     },250);
   }
 
