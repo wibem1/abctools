@@ -39,6 +39,9 @@
     }catch(e){return null;}
   }
   const incoming=incomingPayload();
+  try{
+    if(incoming?.title)sessionStorage.setItem('wibem1_composeme_title',String(incoming.title));
+  }catch(e){}
   try{if(new URLSearchParams(location.search).get('handoff')==='composeme')sessionStorage.setItem('wibem1_abctools_source','composeme');}catch(e){}
 
   function getText(){
