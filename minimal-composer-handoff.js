@@ -32,11 +32,11 @@
   }
 
   function stripComposeMeShortNames(){
-    const source=(()=>{try{return sessionStorage.getItem('wibem1_abctools_source')||'';}catch(e){return'';}})();
-    if(source!=='composeme')return false;
     let text=currentABC();
-    if(!text||!/snm="/.test(text))return false;
-    const cleaned=text.replace(/s+snm="[^"]*"/g,'');
+    const isComposeMeTitle=/^T:\s*ComposeMe\s*$/m.test(text);
+    const source=(()=>{try{return sessionStorage.getItem('wibem1_abctools_source')||'';}catch(e){return'';}})();
+    if(!text||(source!=='composeme'&&!isComposeMeTitle)||!/\bsnm="/.test(text))return false;
+    const cleaned=text.replace(/\s+snm="[^"]*"/g,'');
     if(cleaned===text)return false;
     try{
       if(window.gTheCM&&typeof window.gTheCM.setValue==='function')window.gTheCM.setValue(cleaned);
