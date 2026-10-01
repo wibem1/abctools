@@ -502,7 +502,7 @@ function durationToRestStrings(
         if (section % 4 == 0) abcString += "\n";
         section += 1;
         prevSectionEnd = sectionEnd;
-        sectionEnd = section * sectionLength;
+        sectionEnd = tempo.time + section * sectionLength;
         const count = Math.floor((endTime - prevSectionEnd) / sectionLength);
         for (let i = 0; i < count; i++) {
           abcString += durationToRestString(
@@ -688,6 +688,15 @@ function segmentToString(ns, ins, instrumentId, tempo) {
       );
     } else {
       abcString += chordToString(chord, nextChord, unitTime);
+      // A chord that ends exactly on the bar line must advance the bar state
+      // immediately. Otherwise the following chord is processed against the
+      // previous bar boundary and can create an empty/shifted measure.
+      if (round(chord[0].endTime, 1e13) == round(sectionEnd, 1e13)) {
+        abcString += "|";
+        if (section % 4 == 0) abcString += "\n";
+        section += 1;
+        sectionEnd = tempo.time + section * sectionLength;
+      }
     }
     if (nextChord) {
       abcString += durationToRestStrings(
