@@ -51,7 +51,9 @@
     let tries=0;
     const timer=setInterval(()=>{
       tries+=1;
-      if(stripComposeMeShortNames()||tries>=30)clearInterval(timer);
+      // MIDI -> ABC can take a while on mobile. Keep watching long enough for
+      // the generated V: headers to appear, then remove snm immediately.
+      if(stripComposeMeShortNames()||tries>=240)clearInterval(timer);
     },250);
   }
 
