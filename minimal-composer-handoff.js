@@ -30,6 +30,31 @@
     const end=n+1<starts.length?starts[n+1]:text.length;
     return text.slice(starts[n],end).trim();
   }
+
+  function stripComposeMeShortNames(){
+    const source=(()=>{try{return sessionStorage.getItem('wibem1_abctools_source')||'';}catch(e){return'';}})();
+    if(source!=='composeme')return false;
+    let text=currentABC();
+    if(!text||!/snm="/.test(text))return false;
+    const cleaned=text.replace(/s+snm="[^"]*"/g,'');
+    if(cleaned===text)return false;
+    try{
+      if(window.gTheCM&&typeof window.gTheCM.setValue==='function')window.gTheCM.setValue(cleaned);
+      else {
+        const ta=document.getElementById('abc');
+        if(ta){ta.value=cleaned;ta.dispatchEvent(new Event('input',{bubbles:true}));}
+      }
+      return true;
+    }catch(e){return false;}
+  }
+  function scheduleComposeMeCleanup(){
+    let tries=0;
+    const timer=setInterval(()=>{
+      tries+=1;
+      if(stripComposeMeShortNames()||tries>=30)clearInterval(timer);
+    },250);
+  }
+
   function add(){
     if(document.getElementById('minimal-composer-return'))return;
     const b=document.createElement('button');
@@ -51,5 +76,5 @@
     };
     document.body.appendChild(b);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{add();scheduleComposeMeCleanup();});else{add();scheduleComposeMeCleanup();}
 })();
