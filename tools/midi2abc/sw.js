@@ -1,4 +1,4 @@
-const CACHE_NAME = "2023-09-25 12:10";
+const CACHE_NAME = "2026-10-01 measure-boundary-fix-1";
 const urlsToCache = [
   "/midi2abc/",
   "/midi2abc/index.js",
