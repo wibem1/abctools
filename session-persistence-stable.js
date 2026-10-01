@@ -33,7 +33,7 @@
         localStorage.removeItem(HANDOFF_KEY);
         if(saved?.format==='abc'&&typeof saved.content==='string')return{format:'abc',text:saved.content};
         if(saved?.format==='musicxml'&&typeof saved.content==='string')return{format:'musicxml',text:saved.content};
-        if(saved?.format==='midi'&&typeof saved.data==='string')return{format:'midi',bytes:decodeBase64Url(saved.data)};
+        if(saved?.format==='midi'&&typeof saved.data==='string')return{format:'midi',bytes:decodeBase64Url(saved.data),title:typeof saved.title==='string'?saved.title:''};
       }
       return null;
     }catch(e){return null;}
@@ -85,7 +85,8 @@
     if(payload.format==='musicxml'){
       file=new File([payload.text],'ComposeMe.musicxml',{type:'application/vnd.recordare.musicxml+xml'});
     }else if(payload.format==='midi'){
-      file=new File([payload.bytes],'ComposeMe.mid',{type:'audio/midi'});
+      const safeTitle=String(payload.title||'ComposeMe').trim().replace(/[\\/:*?"<>|]+/g,'_')||'ComposeMe';
+      file=new File([payload.bytes],safeTitle+'.mid',{type:'audio/midi'});
     }else return false;
     const transfer=new DataTransfer();
     transfer.items.add(file);
